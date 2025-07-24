@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [-] 1. Set up project structure and dependencies
+- [x] 1. Set up project structure and dependencies
   - Create new ASP.NET Core Razor Pages project
   - Install required NuGet packages (Identity, Google OAuth, OtpNet, QRCoder, Entity Framework)
   - Configure basic project structure with folders for Models, Services, and Data
