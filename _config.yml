@@ -133,19 +133,17 @@ kramdown:
 
 # SEO settings
 author: Google Auth TOTP Prototype Team
-twitter:
-  username: 
-facebook:
-  app_id: 
-  publisher: 
 
-# Social links
-github_username: 
-linkedin_username: 
+# Social links (uncomment and configure as needed)
+# twitter:
+#   username: your_twitter_username
+# facebook:
+#   app_id: your_facebook_app_id
+#   publisher: your_facebook_publisher
+# github_username: your_github_username
+# linkedin_username: your_linkedin_username
 
-# Google Analytics (optional)
+# Analytics and verification (uncomment and configure as needed)
 # google_analytics: UA-XXXXXXXX-X
-
-# Site verification (optional)
-# google_site_verification: 
-# bing_site_verification:
+# google_site_verification: your_verification_code
+# bing_site_verification: your_verification_code
