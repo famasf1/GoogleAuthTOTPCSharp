@@ -55,7 +55,7 @@ jobs:
           echo 'gem "minima", "~> 2.5"' >> Gemfile
           echo 'gem "jekyll-feed", "~> 0.12"' >> Gemfile
           echo 'gem "jekyll-sitemap"' >> Gemfile
-          echo 'gem "jekyll-seo-tag"' >> Gemfile
+
           echo 'gem "webrick", "~> 1.7"' >> Gemfile
           bundle install
           

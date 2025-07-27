@@ -16,7 +16,6 @@ theme: minima
 plugins:
   - jekyll-feed
   - jekyll-sitemap
-  - jekyll-seo-tag
 
 # Navigation structure
 navigation:
@@ -131,8 +130,7 @@ kramdown:
     block:
       line_numbers: true
 
-# SEO settings
-author: Google Auth TOTP Prototype Team
+
 
 # Social links (uncomment and configure as needed)
 # twitter:
