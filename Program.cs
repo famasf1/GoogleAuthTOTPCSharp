@@ -34,10 +34,17 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 // Register TOTP service
 builder.Services.AddScoped<ITotpService, TotpService>();
 
-// Register User service
-builder.Services.AddScoped<IUserService, UserService>();
+// Register TOTP Management service
+builder.Services.AddScoped<ITotpManagementService, TotpManagementService>();
 
-builder.Services.AddRazorPages();
+// Register Authentication service
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+// Add AutoMapper
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+// Add MVC instead of Razor Pages
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
@@ -57,7 +64,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
-app.MapRazorPages()
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}")
    .WithStaticAssets();
 
 app.Run();

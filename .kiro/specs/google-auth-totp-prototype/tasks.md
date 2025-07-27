@@ -1,8 +1,10 @@
 # Implementation Plan
 
+## Phase 1: Core TOTP Functionality
+
 - [x] 1. Set up project structure and dependencies
   - Create new ASP.NET Core Razor Pages project
-  - Install required NuGet packages (Identity, Google OAuth, OtpNet, QRCoder, Entity Framework)
+  - Install required NuGet packages (Identity, OtpNet, QRCoder, Entity Framework)
   - Configure basic project structure with folders for Models, Services, and Data
   - Create Dockerfile for containerizing the application
   - Create docker-compose.yml for development environment setup
@@ -43,24 +45,16 @@
   - Create documentation for user service classes in Docs/Services/UserService.md
   - _Requirements: 2.4, 3.6, 3.7_
 
-- [ ] 6. Configure Google OAuth authentication
-  - Add Google OAuth configuration to Program.cs
-  - Set up authentication middleware and services
-  - Configure OAuth client ID and secret in appsettings.json
-  - Add required OAuth scopes and redirect URIs
-  - Create documentation for Google OAuth setup in Docs/Configuration/GoogleOAuth.md
-  - _Requirements: 1.2, 3.2, 5.1, 5.2_
-
-- [ ] 7. Create user registration page and functionality
-  - Create Register.cshtml Razor page with username and email fields
-  - Implement RegisterModel PageModel with Google OAuth integration
+- [ ] 6. Create basic user registration page (without OAuth)
+  - Create Register.cshtml Razor page with username, email, and password fields
+  - Implement RegisterModel PageModel with basic Identity registration
   - Add form validation and error handling
   - Implement redirect to TOTP setup after successful registration
   - Write integration tests for registration workflow
   - Create documentation for registration page in Docs/Pages/Registration.md
-  - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
+  - _Requirements: 1.1, 1.3, 1.4, 1.5_
 
-- [ ] 8. Create TOTP setup page and functionality
+- [ ] 7. Create TOTP setup page and functionality
   - Create SetupTotp.cshtml Razor page with QR code display
   - Implement SetupTotpModel PageModel with QR code generation
   - Add TOTP verification form for setup confirmation
@@ -69,16 +63,16 @@
   - Create documentation for TOTP setup page in Docs/Pages/TotpSetup.md
   - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-- [ ] 9. Create login page and Google OAuth integration
-  - Create Login.cshtml Razor page with Google login button
-  - Implement LoginModel PageModel with OAuth redirect handling
-  - Add error handling for Google authentication failures
-  - Implement redirect to TOTP verification after successful Google auth
-  - Write integration tests for Google OAuth login flow
+- [ ] 8. Create basic login page (without OAuth)
+  - Create Login.cshtml Razor page with username/email and password fields
+  - Implement LoginModel PageModel with Identity authentication
+  - Add error handling for authentication failures
+  - Implement redirect to TOTP verification after successful login
+  - Write integration tests for basic login flow
   - Create documentation for login page in Docs/Pages/Login.md
-  - _Requirements: 3.1, 3.2, 5.1, 5.2_
+  - _Requirements: 3.1, 3.3_
 
-- [ ] 10. Create TOTP verification page and functionality
+- [ ] 9. Create TOTP verification page and functionality
   - Create VerifyTotp.cshtml Razor page with 6-digit code input
   - Implement VerifyTotpModel PageModel with code validation logic
   - Add account lockout handling for failed attempts
@@ -87,7 +81,7 @@
   - Create documentation for TOTP verification page in Docs/Pages/TotpVerification.md
   - _Requirements: 3.3, 3.4, 3.5, 3.6, 3.7_
 
-- [ ] 11. Create protected dashboard page
+- [ ] 10. Create protected dashboard page
   - Create Dashboard/Index.cshtml Razor page with user information display
   - Implement DashboardModel PageModel with authorization requirements
   - Add logout functionality and session clearing
@@ -96,7 +90,7 @@
   - Create documentation for dashboard page in Docs/Pages/Dashboard.md
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 12. Implement comprehensive error handling
+- [ ] 11. Implement comprehensive error handling
   - Add global error handling middleware
   - Implement user-friendly error pages for authentication failures
   - Add proper logging for security events and errors
@@ -105,7 +99,7 @@
   - Create documentation for error handling in Docs/Architecture/ErrorHandling.md
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 13. Add session management and security features
+- [ ] 12. Add session management and security features
   - Configure secure session cookies and timeout settings
   - Implement proper session state management for authentication flow
   - Add CSRF protection for forms
@@ -114,14 +108,52 @@
   - Create documentation for security features in Docs/Architecture/Security.md
   - _Requirements: 3.3, 4.2, 4.3, 5.3_
 
-- [ ] 14. Create comprehensive integration tests
+- [ ] 13. Create comprehensive integration tests for Phase 1
   - Write end-to-end tests for complete registration and login workflows
   - Add tests for account lockout and recovery scenarios
   - Create tests for error handling and edge cases
   - Implement tests for authorization and session management
-  - _Requirements: All requirements validation through automated testing_
+  - _Requirements: All Phase 1 requirements validation through automated testing_
 
-- [ ] 15. Add configuration and deployment preparation
+## Phase 2: Google OAuth Integration
+
+- [ ] 14. Configure Google OAuth authentication
+  - Install Google OAuth NuGet packages
+  - Add Google OAuth configuration to Program.cs
+  - Set up authentication middleware and services
+  - Configure OAuth client ID and secret in appsettings.json
+  - Add required OAuth scopes and redirect URIs
+  - Create documentation for Google OAuth setup in Docs/Configuration/GoogleOAuth.md
+  - _Requirements: 1.2, 3.2, 5.1, 5.2_
+
+- [ ] 15. Enhance registration page with Google OAuth
+  - Add Google OAuth registration option to existing Register.cshtml
+  - Implement Google OAuth registration flow in RegisterModel
+  - Add error handling for Google authentication failures
+  - Maintain existing username/password registration as alternative
+  - Update integration tests for OAuth registration workflow
+  - Update documentation for enhanced registration in Docs/Pages/Registration.md
+  - _Requirements: 1.2, 1.3, 1.4, 1.5_
+
+- [ ] 16. Enhance login page with Google OAuth
+  - Add Google login button to existing Login.cshtml
+  - Implement Google OAuth login flow in LoginModel
+  - Add error handling for Google authentication failures
+  - Maintain existing username/password login as alternative
+  - Update integration tests for OAuth login workflow
+  - Update documentation for enhanced login in Docs/Pages/Login.md
+  - _Requirements: 3.1, 3.2, 5.1, 5.2_
+
+- [ ] 17. Create comprehensive integration tests for Phase 2
+  - Write end-to-end tests for Google OAuth registration and login workflows
+  - Add tests for OAuth error handling scenarios
+  - Create tests for mixed authentication methods (OAuth + basic)
+  - Update existing tests to cover both authentication methods
+  - _Requirements: All Phase 2 requirements validation through automated testing_
+
+## Phase 3: Deployment and Documentation
+
+- [ ] 18. Add configuration and deployment preparation
   - Create comprehensive appsettings.json with all required configurations
   - Add environment-specific configuration files
   - Create database seeding for development/testing
@@ -131,20 +163,20 @@
   - Document Docker setup and deployment instructions
   - _Requirements: Support for all functional requirements through proper configuration_
 
-- [ ] 16. Create comprehensive project documentation and GitHub Pages
-  - Create main README.md with project overview, setup instructions, and usage guide
-  - Create Docs/index.md as documentation homepage with navigation structure
+- [ ] 19. Create comprehensive project documentation and GitHub Pages
+  - Update main README.md with complete project overview, setup instructions, and usage guide
+  - Update Docs/index.md as documentation homepage with navigation structure
   - Create Docs/Architecture/Overview.md with system architecture and design decisions
   - Create Docs/API/Services.md documenting all service interfaces and implementations
   - Create Docs/Testing/TestingStrategy.md documenting testing approach and coverage
   - Create Docs/Deployment/LocalDevelopment.md with local setup and development guide
   - Create Docs/Deployment/Docker.md with containerization and Docker deployment guide
-  - Set up GitHub Pages configuration with Jekyll or MkDocs for documentation site
-  - Create GitHub Actions workflow to automatically build and deploy documentation
+  - Update GitHub Pages configuration for complete documentation site
+  - Update GitHub Actions workflow to automatically build and deploy documentation
   - Add documentation versioning and update process
   - _Requirements: Comprehensive documentation for all implemented features and deployment options_
 
-- [ ] 17. Set up GitHub Actions CI/CD pipeline
+- [ ] 20. Set up GitHub Actions CI/CD pipeline
   - Create GitHub Actions workflow for automated building and testing
   - Configure automated testing pipeline with unit and integration tests
   - Add Docker image building and artifact creation

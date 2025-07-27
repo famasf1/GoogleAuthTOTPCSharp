@@ -9,6 +9,8 @@
   <ItemGroup>
     <Compile Remove="GoogleAuthTotpPrototype.Tests/**" />
      <Compile Remove="**/*Tests.cs" />
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.7" />
