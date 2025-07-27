@@ -107,9 +107,9 @@ exclude:
   - vendor/ruby/
   - bin/
   - obj/
-  - *.csproj
-  - *.sln
-  - appsettings*.json
+  - "*.csproj"
+  - "*.sln"
+  - "appsettings*.json"
   - docker-compose.yml
   - Dockerfile
   - .git/
