@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using GoogleAuthTotpPrototype.Data;
 using GoogleAuthTotpPrototype.Models;
+using GoogleAuthTotpPrototype.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +30,9 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Register TOTP service
+builder.Services.AddScoped<ITotpService, TotpService>();
 
 builder.Services.AddRazorPages();
 

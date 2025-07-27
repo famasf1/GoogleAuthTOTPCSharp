@@ -1,0 +1,151 @@
+# Site settings
+title: Google Auth TOTP Prototype
+description: >-
+  A secure authentication system combining Google OAuth with Time-based 
+  One-Time Password (TOTP) two-factor authentication built with ASP.NET Core.
+
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "" # the base hostname & protocol for your site
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# GitHub Pages settings
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Navigation structure
+navigation:
+  - title: Home
+    url: /
+  - title: Architecture
+    url: /Architecture/
+    subnav:
+      - title: Overview
+        url: /Architecture/Overview/
+      - title: Security
+        url: /Architecture/Security/
+      - title: Error Handling
+        url: /Architecture/ErrorHandling/
+  - title: Services
+    url: /Services/
+    subnav:
+      - title: TOTP Service
+        url: /Services/TotpService/
+      - title: User Service
+        url: /Services/UserService/
+  - title: Pages
+    url: /Pages/
+    subnav:
+      - title: Registration
+        url: /Pages/Registration/
+      - title: Login
+        url: /Pages/Login/
+      - title: TOTP Setup
+        url: /Pages/TotpSetup/
+      - title: TOTP Verification
+        url: /Pages/TotpVerification/
+      - title: Dashboard
+        url: /Pages/Dashboard/
+  - title: Configuration
+    url: /Configuration/
+    subnav:
+      - title: Google OAuth
+        url: /Configuration/GoogleOAuth/
+  - title: Deployment
+    url: /Deployment/
+    subnav:
+      - title: Local Development
+        url: /Deployment/LocalDevelopment/
+      - title: Docker
+        url: /Deployment/Docker/
+  - title: Testing
+    url: /Testing/
+    subnav:
+      - title: Testing Strategy
+        url: /Testing/TestingStrategy/
+
+# Collections
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:name/
+
+# Default layouts
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+  - scope:
+      path: "Docs"
+      type: "pages"
+    values:
+      layout: "default"
+  - scope:
+      path: ""
+      type: "docs"
+    values:
+      layout: "default"
+
+# Exclude from processing
+exclude:
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - bin/
+  - obj/
+  - *.csproj
+  - *.sln
+  - appsettings*.json
+  - docker-compose.yml
+  - Dockerfile
+  - .git/
+  - .vs/
+  - .kiro/
+
+# Include files
+include:
+  - _pages
+  - Docs
+
+# Syntax highlighting
+kramdown:
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: 'highlight'
+    span:
+      line_numbers: false
+    block:
+      line_numbers: true
+
+# SEO settings
+author: Google Auth TOTP Prototype Team
+twitter:
+  username: 
+facebook:
+  app_id: 
+  publisher: 
+
+# Social links
+github_username: 
+linkedin_username: 
+
+# Google Analytics (optional)
+# google_analytics: UA-XXXXXXXX-X
+
+# Site verification (optional)
+# google_site_verification: 
+# bing_site_verification:
