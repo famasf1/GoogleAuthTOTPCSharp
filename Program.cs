@@ -34,6 +34,9 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 // Register TOTP service
 builder.Services.AddScoped<ITotpService, TotpService>();
 
+// Register User service
+builder.Services.AddScoped<IUserService, UserService>();
+
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
