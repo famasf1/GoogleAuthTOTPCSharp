@@ -2,150 +2,208 @@
 
 ## Overview
 
-The registration page allows new users to create accounts in the Google Auth TOTP Prototype application. This page has been refactored to follow the MVVM (Model-View-ViewModel) pattern with proper separation of concerns.
+The Registration page allows new users to create accounts in the Google Auth TOTP Prototype application. This page implements basic username/password registration as the first step in the authentication flow, followed by mandatory TOTP setup.
 
-## Architecture
+## Location
 
-### MVVM Structure
-
-The registration functionality is organized using the following structure:
-
-```
-Services/Authentication/
-├── ViewModel/
-│   ├── VMPARAMRegisterRequest.cs    # Input model for registration
-│   └── VMPARAMRegisterResponse.cs   # Response model for registration
-├── Service/
-│   ├── IAuthenticationService.cs    # Service interface
-│   └── AuthenticationService.cs     # Service implementation
-└── Profile/
-    └── AuthenticationProfile.cs     # AutoMapper profile
-```
-
-### Components
-
-#### ViewModel (VMPARAMRegisterRequest)
-
-The `VMPARAMRegisterRequest` class contains:
-- **Username**: 3-50 characters, required
-- **Email**: Valid email address, required
-- **Password**: 6-100 characters with complexity requirements
-- **ConfirmPassword**: Must match password
-
-#### Service Layer (AuthenticationService)
-
-The `AuthenticationService` handles:
-- User creation using ASP.NET Core Identity
-- Password validation
-- Automatic sign-in after successful registration
-- Error handling and logging
-- Redirect to TOTP setup page
-
-#### Controller (AuthenticationController)
-
-The `AuthenticationController` manages:
-- GET requests to display registration form
-- POST requests to process registration
-- Model validation
-- Error display
-- Redirects after successful registration
+- **URL**: `/Authentication/Register`
+- **Controller**: `AuthenticationController`
+- **Action**: `Register`
+- **View**: `Views/Authentication/Register.cshtml`
 
 ## Features
 
-### Form Validation
+### Form Fields
 
-- **Client-side validation**: Real-time validation using data annotations
-- **Server-side validation**: Comprehensive validation in the service layer
-- **Custom validation**: Password confirmation matching
+1. **Username**
+   - Required field
+   - 3-50 characters in length
+   - Used as both username and display name
+   - Must be unique across the system
+
+2. **Email**
+   - Required field
+   - Must be a valid email address format
+   - Must be unique across the system
+   - Used for account identification
+
+3. **Password**
+   - Required field
+   - Minimum 6 characters
+   - Must contain at least one uppercase letter, one lowercase letter, and one digit
+   - No special characters required
+
+4. **Confirm Password**
+   - Required field
+   - Must match the password field exactly
+   - Client-side and server-side validation
+
+### Validation
+
+#### Client-Side Validation
+- Real-time validation using jQuery Validation
+- Immediate feedback on field requirements
+- Password confirmation matching
+
+#### Server-Side Validation
+- Model validation using Data Annotations
+- Identity framework validation rules
+- Duplicate email/username checking
+- Password complexity requirements
 
 ### Security Features
 
-- Anti-forgery token protection
-- Password complexity requirements
-- Email uniqueness validation
-- Secure password hashing via Identity
+- **Anti-Forgery Token**: CSRF protection on form submission
+- **Password Hashing**: Passwords are hashed using ASP.NET Core Identity
+- **Input Sanitization**: All inputs are validated and sanitized
+- **Secure Redirects**: Post-registration redirect to TOTP setup
 
-### User Experience
-
-- Bootstrap-styled responsive form
-- Clear error messaging
-- Loading states and feedback
-- Automatic redirect to TOTP setup
-
-## Usage
-
-### Registration Flow
+## User Flow
 
 1. User navigates to `/Authentication/Register`
 2. User fills out the registration form
-3. Form is validated client-side
-4. On submission, server-side validation occurs
-5. If valid, user account is created
-6. User is automatically signed in
-7. User is redirected to TOTP setup page
+3. Form is validated client-side and server-side
+4. If valid:
+   - User account is created in the database
+   - User is automatically signed in
+   - User is redirected to `/Totp/Setup` for mandatory TOTP configuration
+5. If invalid:
+   - User remains on registration page
+   - Validation errors are displayed
+   - User can correct errors and resubmit
 
-### Error Handling
+## Technical Implementation
 
-The registration process handles various error scenarios:
-- Invalid email format
-- Password complexity violations
-- Password confirmation mismatch
-- Duplicate email addresses
-- Database connection issues
-- General system errors
+### View Model
 
-## API Endpoints
+The registration page uses `VMPARAMRegisterRequest` view model:
 
-### GET /Authentication/Register
-- Displays the registration form
-- Returns empty `VMPARAMRegisterRequest` model
+```csharp
+public class VMPARAMRegisterRequest
+{
+    [Required]
+    [StringLength(50, MinimumLength = 3)]
+    public string Username { get; set; }
 
-### POST /Authentication/Register
-- Processes registration form submission
-- Accepts `VMPARAMRegisterRequest` model
-- Returns success redirect or error view
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; }
 
-## Configuration
+    [Required]
+    [StringLength(100, MinimumLength = 6)]
+    [DataType(DataType.Password)]
+    public string Password { get; set; }
 
-### Password Requirements
+    [DataType(DataType.Password)]
+    [Compare("Password")]
+    public string ConfirmPassword { get; set; }
+}
+```
 
-Password requirements are configured in `Program.cs`:
-- Minimum length: 6 characters
-- Requires digit: Yes
-- Requires lowercase: Yes
-- Requires uppercase: Yes
-- Requires non-alphanumeric: No
-- Unique characters: 1
+### Controller Actions
 
-### Lockout Settings
+#### GET /Authentication/Register
+- Returns the registration view with empty model
+- Sets return URL if provided in query string
 
-Account lockout is configured for security:
-- Lockout duration: 5 minutes
-- Max failed attempts: 5
-- Enabled for new users: Yes
+#### POST /Authentication/Register
+- Validates the submitted model
+- Creates new user account if validation passes
+- Signs in the user automatically
+- Redirects to TOTP setup page
+- Returns view with errors if validation fails
+
+### Database Integration
+
+- Uses ASP.NET Core Identity for user management
+- Creates `ApplicationUser` entity with extended properties
+- Automatically sets `IsTotpEnabled = false` for new users
+- Maps username to both `UserName` and `DisplayName` fields
+
+## Error Handling
+
+### Validation Errors
+- Field-level validation errors displayed below each input
+- Summary validation errors displayed at the top of the form
+- Maintains user input on validation failure
+
+### Common Error Scenarios
+1. **Duplicate Email**: "Email 'email@example.com' is already taken."
+2. **Duplicate Username**: "User name 'username' is already taken."
+3. **Password Requirements**: "Passwords must have at least one uppercase, one lowercase, and one digit."
+4. **Password Mismatch**: "The password and confirmation password do not match."
+
+### System Errors
+- Generic error message for unexpected failures
+- Detailed logging for debugging purposes
+- Graceful degradation with user-friendly messages
+
+## Styling and UI
+
+### Bootstrap Integration
+- Uses Bootstrap 5 for responsive design
+- Card-based layout for clean presentation
+- Form validation styling with Bootstrap classes
+
+### Responsive Design
+- Mobile-friendly form layout
+- Proper spacing and typography
+- Accessible form controls and labels
+
+### User Experience
+- Clear field labels and placeholders
+- Intuitive form flow
+- Link to login page for existing users
 
 ## Testing
 
-The registration functionality includes comprehensive integration tests:
-- Form display validation
+### Integration Tests
+- Form rendering validation
 - Successful registration flow
-- Validation error handling
-- Duplicate email handling
-- Database integration testing
+- Validation error scenarios
+- Database user creation verification
+- Duplicate email/username handling
 
-## Dependencies
+### Test Coverage
+- Valid registration data processing
+- Invalid data validation
+- Error message display
+- Database integration
+- Redirect behavior
 
-- ASP.NET Core Identity
-- Entity Framework Core
-- AutoMapper
-- Bootstrap (UI framework)
-- jQuery (client-side validation)
+## Security Considerations
+
+### Input Validation
+- All inputs validated on both client and server
+- SQL injection prevention through Entity Framework
+- XSS prevention through proper encoding
+
+### Authentication Security
+- Passwords hashed using Identity framework
+- Secure session management
+- Anti-forgery token protection
+
+### Data Protection
+- No sensitive data logged
+- Secure password storage
+- Proper error message handling (no information disclosure)
 
 ## Future Enhancements
 
-Planned improvements include:
-- Email verification workflow
-- Social login integration (Google OAuth)
-- Enhanced password strength indicators
-- CAPTCHA integration
-- Account activation via email
+### Planned Features (Phase 2)
+- Google OAuth registration option
+- Email verification requirement
+- Enhanced password requirements
+- Account activation workflow
+
+### Accessibility Improvements
+- ARIA labels for screen readers
+- Keyboard navigation support
+- High contrast mode compatibility
+
+## Related Documentation
+
+- [Authentication Service](../Services/AuthenticationService.md)
+- [TOTP Setup Page](TotpSetup.md)
+- [Login Page](Login.md)
+- [Security Architecture](../Architecture/Security.md)

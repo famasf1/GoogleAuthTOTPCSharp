@@ -86,7 +86,50 @@ public class AuthenticationService : IAuthenticationService
                 };
             }
 
-            // Attempt sign in
+            // Check if user has TOTP enabled - if so, don't complete sign-in yet
+            if (user.IsTotpEnabled)
+            {
+                // Verify password without signing in
+                var passwordValid = await _userManager.CheckPasswordAsync(user, request.Password);
+                if (!passwordValid)
+                {
+                    // Increment failed access count for lockout
+                    await _userManager.AccessFailedAsync(user);
+                    
+                    return new VMPARAMLoginResponse
+                    {
+                        IsSuccess = false,
+                        Errors = new List<string> { "Invalid email or password." }
+                    };
+                }
+
+                // Password is valid, but don't sign in - redirect to TOTP verification
+                _logger.LogInformation("User {Username} password verified, redirecting to TOTP verification", user.UserName);
+                
+                return new VMPARAMLoginResponse
+                {
+                    IsSuccess = true,
+                    RequiresTwoFactor = true,
+                    UserId = user.Id,
+                    Username = user.UserName!,
+                    RedirectUrl = "/Totp/Verify"
+                };
+            }
+            
+            if (!user.IsTotpEnabled)
+            {
+                _logger.LogInformation("User {Username} does not have TOTP enabled, redirecting to TOTP setup", user.UserName);
+
+                return new VMPARAMLoginResponse
+                {
+                    IsSuccess = true,
+                    RequiresTwoFactor = false,
+                    UserId = user.Id,
+                    Username = user.UserName!,
+                    RedirectUrl = "/Totp/Setup"
+                };
+            }
+
             var result = await _signInManager.PasswordSignInAsync(
                 user.UserName!, 
                 request.Password, 
@@ -98,7 +141,7 @@ public class AuthenticationService : IAuthenticationService
                 _logger.LogInformation("User {Username} logged in successfully", user.UserName);
                 
                 var response = _mapper.Map<VMPARAMLoginResponse>(user);
-                response.RedirectUrl = user.IsTotpEnabled ? "/Totp/Verify" : "/";
+                response.RedirectUrl = "/Home/Success";
                 
                 return response;
             }

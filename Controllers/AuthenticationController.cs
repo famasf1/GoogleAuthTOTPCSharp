@@ -72,11 +72,21 @@ public class AuthenticationController : Controller
 
         var result = await _authenticationService.LoginAsync(model);
         
-        if (result.IsSuccess)
+        // No Two-Factor setup
+        if (!result.RequiresTwoFactor) 
         {
-            _logger.LogInformation("User {Username} logged in successfully", result.Username);
+            _logger.LogInformation("User {Username} logged in successfully. But TOTP setup failed. Redirect to TOTP Setup", result.Username);
             return Redirect(result.RedirectUrl ?? returnUrl ?? "/");
         }
+
+        if (result.IsSuccess && result.RequiresTwoFactor)
+        {
+            _logger.LogInformation("User {Username} requires TOTP verification", result.Username);
+            // Store the user ID in TempData for TOTP verification
+            TempData["PendingTotpUserId"] = result.UserId;
+            TempData["PendingTotpUsername"] = result.Username;
+            return Redirect(result.RedirectUrl ?? returnUrl ?? "/");
+        } 
 
         // Add errors to ModelState
         foreach (var error in result.Errors)

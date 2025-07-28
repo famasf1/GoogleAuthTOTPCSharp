@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GoogleAuthTotpPrototype.Controllers;
@@ -11,7 +12,15 @@ public class HomeController : Controller
         _logger = logger;
     }
 
-    public IActionResult Index()
+    [Authorize]
+    public IActionResult Success()
+    {
+        var loginTime = DateTime.Now;
+        ViewData["LoginTime"] = loginTime;
+        return View();
+    }
+
+    public IActionResult Register()
     {
         return View();
     }

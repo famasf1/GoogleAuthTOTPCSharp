@@ -80,7 +80,22 @@ public class TotpController : Controller
     [AllowAnonymous]
     public IActionResult Verify()
     {
-        return View(new VMPARAMTotpVerifyRequest());
+        var userId = TempData["PendingTotpUserId"]?.ToString();
+        var username = TempData["PendingTotpUsername"]?.ToString();
+        
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("TOTP verification accessed without pending user ID");
+            return RedirectToAction("Login", "Authentication");
+        }
+
+        // Keep the TempData for the POST request
+        TempData.Keep("PendingTotpUserId");
+        TempData.Keep("PendingTotpUsername");
+        
+        ViewData["Username"] = username;
+        
+        return View(new VMPARAMTotpVerifyRequest { UserId = userId });
     }
 
     [HttpPost]
@@ -90,6 +105,10 @@ public class TotpController : Controller
     {
         if (!ModelState.IsValid)
         {
+            // Restore username for display
+            var username = TempData["PendingTotpUsername"]?.ToString();
+            ViewData["Username"] = username;
+            TempData.Keep("PendingTotpUsername");
             return View(model);
         }
 
@@ -98,13 +117,29 @@ public class TotpController : Controller
         if (result.IsSuccess && result.IsValid)
         {
             _logger.LogInformation("TOTP verification successful for user {UserId}", model.UserId);
+            // Clear TempData on successful verification
+            TempData.Remove("PendingTotpUserId");
+            TempData.Remove("PendingTotpUsername");
             return Redirect(result.RedirectUrl ?? "/");
+        }
+
+        // Handle lockout scenario
+        if (result.IsLockedOut)
+        {
+            ViewData["IsLockedOut"] = true;
+            _logger.LogWarning("User {UserId} is locked out due to too many TOTP failures", model.UserId);
         }
 
         foreach (var error in result.Errors)
         {
             ModelState.AddModelError(string.Empty, error);
         }
+
+        // Restore username for display and keep TempData for retry
+        var usernameForDisplay = TempData["PendingTotpUsername"]?.ToString();
+        ViewData["Username"] = usernameForDisplay;
+        TempData.Keep("PendingTotpUsername");
+        TempData.Keep("PendingTotpUserId");
 
         return View(model);
     }

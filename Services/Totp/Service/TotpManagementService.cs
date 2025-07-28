@@ -7,15 +7,18 @@ namespace GoogleAuthTotpPrototype.Services;
 public class TotpManagementService : ITotpManagementService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ITotpService _totpService;
     private readonly ILogger<TotpManagementService> _logger;
 
     public TotpManagementService(
         UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager,
         ITotpService totpService,
         ILogger<TotpManagementService> logger)
     {
         _userManager = userManager;
+        _signInManager = signInManager;
         _totpService = totpService;
         _logger = logger;
     }
@@ -37,8 +40,16 @@ public class TotpManagementService : ITotpManagementService
             // Generate new secret
             var secret = _totpService.GenerateSecret();
             
+            _logger.LogInformation("Generated TOTP secret for user {UserId}. Secret: {Secret}, Length: {Length}", 
+                user.Id, secret, secret.Length);
+            
             // Generate QR code URI
             var qrCodeUri = _totpService.GenerateQrCodeUri(user.Email!, secret);
+            
+            _logger.LogInformation("Generated QR code URI for user {UserId}: {QrCodeUri}", user.Id, qrCodeUri);
+            
+            // Generate QR code base64 image
+            var qrCodeBase64 = _totpService.GenerateQrCodeBase64(qrCodeUri);
             
             // Store the secret temporarily (not enabled yet)
             user.TotpSecret = secret;
@@ -61,6 +72,7 @@ public class TotpManagementService : ITotpManagementService
                 IsSuccess = true,
                 Secret = secret,
                 QrCodeUrl = qrCodeUri,
+                QrCodeBase64 = qrCodeBase64,
                 ManualEntryKey = secret
             };
         }
@@ -109,6 +121,11 @@ public class TotpManagementService : ITotpManagementService
                 };
             }
 
+            // Debug: Generate current code for comparison
+            var currentCode = _totpService.GenerateCurrentCode(user.TotpSecret);
+            _logger.LogInformation("TOTP verification attempt for user {UserId}. Input code: {InputCode}, Current expected code: {CurrentCode}, Secret length: {SecretLength}", 
+                user.Id, request.Code, currentCode, user.TotpSecret?.Length ?? 0);
+
             // Validate TOTP code
             var isValid = _totpService.ValidateTotp(user.TotpSecret, request.Code);
             
@@ -121,13 +138,16 @@ public class TotpManagementService : ITotpManagementService
                 
                 await _userManager.UpdateAsync(user);
                 
-                _logger.LogInformation("TOTP verification successful for user {UserId}", user.Id);
+                // Complete the sign-in process after successful TOTP verification
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                
+                _logger.LogInformation("TOTP verification successful for user {UserId}, user signed in", user.Id);
                 
                 return new VMPARAMTotpVerifyResponse
                 {
                     IsSuccess = true,
                     IsValid = true,
-                    RedirectUrl = "/"
+                    RedirectUrl = "/Home/Success"
                 };
             }
             else
@@ -136,10 +156,10 @@ public class TotpManagementService : ITotpManagementService
                 user.TotpFailureCount++;
                 user.LastTotpFailure = DateTime.UtcNow;
                 
-                // Lock out after 5 failed attempts for 15 minutes
-                if (user.TotpFailureCount >= 5)
+                // Lock out after 3 failed attempts for 5 minutes (per requirements)
+                if (user.TotpFailureCount >= 3)
                 {
-                    user.TotpLockoutEnd = DateTime.UtcNow.AddMinutes(15);
+                    user.TotpLockoutEnd = DateTime.UtcNow.AddMinutes(5);
                     _logger.LogWarning("User {UserId} locked out due to too many TOTP failures", user.Id);
                 }
                 
@@ -181,7 +201,7 @@ public class TotpManagementService : ITotpManagementService
                     
                     _logger.LogInformation("TOTP enabled for user {UserId}", user.Id);
                     
-                    verifyResult.RedirectUrl = "/";
+                    verifyResult.RedirectUrl = "/Home/Success";
                 }
             }
             catch (Exception ex)

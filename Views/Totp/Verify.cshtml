@@ -1,0 +1,105 @@
+@model GoogleAuthTotpPrototype.Services.Totp.ViewModel.VMPARAMTotpVerifyRequest
+@{
+    ViewData["Title"] = "Two-Factor Authentication";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Two-Factor Authentication</h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                    @if (ViewData["Username"] != null)
+                    {
+                        <p class="text-muted">Welcome back, <strong>@ViewData["Username"]</strong></p>
+                    }
+                    <p class="text-muted">Enter the 6-digit code from your authenticator app to complete sign-in.</p>
+                </div>
+
+                @if (ViewData["IsLockedOut"] != null && (bool)ViewData["IsLockedOut"])
+                {
+                    <div class="alert alert-danger text-center">
+                        <i class="fas fa-lock fa-2x mb-2"></i>
+                        <h5>Account Temporarily Locked</h5>
+                        <p class="mb-0">Your account has been temporarily locked due to too many failed verification attempts. Please try again in 5 minutes.</p>
+                    </div>
+                }
+                else
+                {
+                    <form asp-controller="Totp" asp-action="Verify" method="post">
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                    
+                    <input type="hidden" asp-for="UserId" />
+                    
+                    <div class="form-group mb-4">
+                        <label asp-for="Code" class="form-label">Verification Code</label>
+                        <input asp-for="Code" 
+                               class="form-control form-control-lg text-center" 
+                               placeholder="000000" 
+                               maxlength="6" 
+                               pattern="[0-9]{6}" 
+                               required 
+                               autocomplete="off"
+                               autofocus
+                               style="letter-spacing: 0.5em; font-size: 1.5rem;" />
+                        <span asp-validation-for="Code" class="text-danger"></span>
+                        <div class="form-text text-center">Enter the 6-digit code from your authenticator app</div>
+                    </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">Verify Code</button>
+                        </div>
+                    </form>
+
+                    <div class="text-center">
+                        <small class="text-muted">
+                            Having trouble? Make sure your device's time is synchronized and try again.
+                        </small>
+                    </div>
+                }
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <a href="/Authentication/Login" class="btn btn-outline-secondary">Back to Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeInput = document.getElementById('Code');
+            
+            // Auto-format the TOTP code input
+            codeInput.addEventListener('input', function(e) {
+                // Remove any non-digit characters
+                this.value = this.value.replace(/\D/g, '');
+                
+                // Limit to 6 digits
+                if (this.value.length > 6) {
+                    this.value = this.value.substring(0, 6);
+                }
+            });
+
+            // Auto-submit when 6 digits are entered
+            codeInput.addEventListener('input', function(e) {
+                if (this.value.length === 6) {
+                    // Small delay to allow user to see the complete code
+                    setTimeout(() => {
+                        this.form.submit();
+                    }, 500);
+                }
+            });
+
+            // Focus the input field
+            codeInput.focus();
+        });
+    </script>
+}
